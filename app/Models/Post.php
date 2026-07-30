@@ -9,15 +9,26 @@ class Post extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'user_id',
-        'image',
-        'caption',
-    ];
+    protected $fillable = ['user_id', 'image', 'caption'];
 
-    // Relasi: Post dimiliki oleh 1 User
     public function user()
     {
-        return $table = $this->belongsTo(User::class);
+        return $this->belongsTo(User::class);
+    }
+
+    public function likes()
+    {
+        return $this->hasMany(Like::class);
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
+
+    // Cek apakah postingan ini sudah di-like oleh user tertentu
+    public function isLikedBy(User $user)
+    {
+        return $this->likes->contains('user_id', $user->id);
     }
 }

@@ -11,8 +11,26 @@ class PostController extends Controller
     // Menampilkan halaman dashboard / feed
     public function index()
     {
-        $posts = Post::with('user')->latest()->get();
+        // Load relasi user, likes, dan comments
+        $posts = Post::with(['user', 'likes', 'comments.user'])->latest()->get();
         return view('dashboard', compact('posts'));
+    }
+
+    public function destroy(Post $post)
+    {
+        // Pengecekan hak akses (Hanya pembuat post yang boleh hapus)
+        if (auth()->id() !== $post->user_id) {
+            abort(403, 'Tidak memiliki akses untuk menghapus postingan ini.');
+        }
+
+        // Hapus gambar dari storage
+        if ($post->image) {
+            Storage::disk('public')->delete($post->image);
+        }
+
+        $post->delete();
+
+        return redirect()->back()->with('success', 'Postingan berhasil dihapus!');
     }
 
     // Menyimpan postingan baru
